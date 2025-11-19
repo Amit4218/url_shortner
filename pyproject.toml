@@ -1,0 +1,19 @@
+[project]
+name = "url-shortner"
+version = "0.1.0"
+description = "A python flask based url shortner"
+authors = [
+    {name = "Amit4218",email = "amitbhagat621@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "flask (>=3.1.2,<4.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

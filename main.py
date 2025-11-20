@@ -1,6 +1,12 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+from config import db
+from utils.env_provider import DATABASE_URL
+
 
 app = Flask(__name__)
+app.config["DATABASE_URL"] = DATABASE_URL
+
+db.init_app(app)
 
 
 @app.route("/healthz")
@@ -10,6 +16,7 @@ def health():
 
 # pages route
 
+
 @app.route("/", methods=["GET"])
 def home():
     return render_template("base.html")
@@ -17,6 +24,12 @@ def home():
 
 @app.route("/url", methods=["POST"])
 def get_url():
+
+    original_url = request.form["original_url"]
+
+    if not original_url:
+        return "No url provides", 404
+
     return render_template("")
 
 

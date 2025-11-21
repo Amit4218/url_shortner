@@ -1,10 +1,11 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_sqlalchemy_lite import SQLAlchemy
-from sqlalchemy import select, String
+from sqlalchemy import select, String, text
 from typing import Optional
 from datetime import datetime
-from uuid import uuid4
-from core import url_actions
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+from core import ShortUrl
 
 
 db = SQLAlchemy()
@@ -18,10 +19,10 @@ class Url(Base):
 
     __tablename__ = "urls"
 
-    id: Mapped[str] = mapped_column(
-        primary_key=True, default=lambda: str(uuid4()), unique=True
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()")
     )
-    original_url: Mapped[Optional[str]] = mapped_column(String(500))
+    original_url: Mapped[Optional[str]] = mapped_column(String(1500))
     short_url: Mapped[Optional[str]] = mapped_column(unique=True)
     visit_count: Mapped[Optional[int]] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
@@ -29,7 +30,7 @@ class Url(Base):
 
 class DatabaseAction:
 
-    def store_url_to_db(self, original_url: str) -> None:
+    def store_url_to_db(self, original_url: str) -> str:
         """generates and stores the original and short url to db."""
 
         # generate a short unique url
@@ -42,26 +43,30 @@ class DatabaseAction:
         db.session.add(url)
         db.session.commit()
 
+        return short_url
+
     def get_redirect_url(self, short_url: str) -> Optional[str]:
         """return the redirect url for the short url"""
 
         query = select(Url.original_url).where(Url.short_url == short_url)
 
-        url = db.session.execute(query).scalar()
+        url = db.session.execute(query).scalar_one_or_none()
 
         return url
 
     def increment_visit_count(self, short_url: str):
-        """Increase the visit count for a short URL and return the updated Url object."""
+        """Increase visit count safely and return updated object."""
 
-        stmt = select(Url).where(Url.short_url == short_url)
-        url = db.session.execute(stmt).scalar_one_or_none()
+        url = db.session.execute(
+            select(Url).where(Url.short_url == short_url)
+        ).scalar_one_or_none()
 
-        if not url:
+        if url is None:
             return None
 
-        url.visit_count += 1  # type: ignore
+        url.visit_count = (url.visit_count or 0) + 1
         db.session.commit()
+        db.session.refresh(url)
 
         return url
 
@@ -99,3 +104,4 @@ class DatabaseAction:
 
 
 database_actions = DatabaseAction()
+url_actions = ShortUrl(database_actions)

@@ -32,6 +32,9 @@
           Submit
         </button>
       </div>
+      {% if message %}
+      <p class="text-sm font-bold text-center my-6 text-red-600">{{message}}</p>
+      {% endif %}
     </form>
   </div>
 </div>

@@ -1,26 +1,22 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from flask_sqlalchemy_lite import SQLAlchemy
-from sqlalchemy import select, String, text
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import select, String
 from typing import Optional
 from datetime import datetime
-import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from core import ShortUrl
+import uuid
 
 
 db = SQLAlchemy()
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class Url(Base):
+class Url(db.Model):
 
     __tablename__ = "urls"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text("uuid_generate_v4()")
+        UUID(as_uuid=True), primary_key=True, default=lambda: uuid.uuid4()
     )
     original_url: Mapped[Optional[str]] = mapped_column(String(1500))
     short_url: Mapped[Optional[str]] = mapped_column(unique=True)
@@ -38,7 +34,9 @@ class DatabaseAction:
 
         # store the information
 
-        url = Url(original_url=original_url, short_url=short_url)
+        url = Url()
+        url.original_url = original_url
+        url.short_url = short_url
 
         db.session.add(url)
         db.session.commit()
@@ -75,7 +73,7 @@ class DatabaseAction:
 
         query = select(Url).where(Url.short_url == short_url)
 
-        result = db.session.execute(query).scalar_one()
+        result = db.session.execute(query).scalar_one_or_none()
 
         return result
 

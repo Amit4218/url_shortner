@@ -43,7 +43,8 @@
 <div class="container mx-auto mt-10 px-4 flex justify-center">
   <div class="bg-white p-6 rounded-lg shadow-md w-1/2 border border-gray-200">
     <h2 class="text-xl font-bold text-center mb-6">
-      Analytics for: <span class="text-blue-600">{{ url_info.short_url }}</span>
+      Analytics for:
+      <span class="text-blue-600">{{ url_info.url.short_url }}</span>
     </h2>
 
     <!-- Grid layout -->
@@ -51,7 +52,7 @@
       <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
         <p class="text-lg font-semibold">Total Clicks</p>
         <p class="text-3xl font-bold text-green-600">
-          {{ url_info.visit_count }}
+          {{ url_info.url.visit_count }}
         </p>
       </div>
 
@@ -59,23 +60,56 @@
         class="bg-gray-50 p-4 rounded-md border border-gray-200 break-all text-center"
       >
         <p class="text-lg font-semibold">Original URL</p>
-        <p class="text-blue-700">{{ url_info.original_url }}</p>
+        <p class="text-blue-700">{{ url_info.url.original_url }}</p>
       </div>
 
       <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
         <p class="text-lg font-semibold">Short URL</p>
         <a
-          href="/{{ url_info.short_url }}"
+          href="/{{ url_info.url.short_url }}"
           class="text-indigo-600 underline break-all"
         >
-          {{ request.host_url }}{{ url_info.short_url }}
+          {{ request.host_url }}{{ url_info.url.short_url }}
         </a>
       </div>
 
       <div class="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
         <p class="text-lg font-semibold">Created At</p>
-        <p>{{ url_info.created_at.strftime("%b %d, %Y • %I:%M %p") }}</p>
+        <p>{{ url_info.url.created_at.strftime("%b %d, %Y • %I:%M %p") }}</p>
       </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% if data %}
+<div class="container mx-auto mt-10 px-4 flex justify-center">
+  <div class="bg-white p-6 rounded-lg shadow-md w-1/2 border border-gray-200">
+    <h2 class="text-xl font-bold text-center mb-4">Visit Details</h2>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-300 divide-y divide-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold border">#</th>
+            <th class="px-4 py-2 text-left font-semibold border">IP Address</th>
+            <th class="px-4 py-2 text-left font-semibold border">
+              Device Type
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in data %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 border">{{ loop.index }}</td>
+            <td class="px-4 py-2 border">
+              {{ entry.ip_address or "Unknown" }}
+            </td>
+            <td class="px-4 py-2 border">
+              {{ entry.device_type or "Unknown" }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

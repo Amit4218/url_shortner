@@ -54,7 +54,6 @@ class DatabaseAction:
 
         url.original_url = original_url
         url.short_url = short_url
-        url.url_data = [UrlData()]
 
         db.session.add(url)
         db.session.commit()
